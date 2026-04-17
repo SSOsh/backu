@@ -371,7 +371,7 @@ aboutModal.addEventListener('click', (e) => {
 
 // 계좌 복사
 document.getElementById('copyBtn').addEventListener('click', () => {
-    const account = '3333-01-1234567';
+    const account = '3333-26-7184989';
     navigator.clipboard.writeText(account).then(() => {
         showToast('계좌번호가 복사되었습니다!');
     }).catch(() => {
