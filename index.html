@@ -3,14 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>빠큐 - Interactive Pop</title>
+    <title>몰래 날려버려 🖕</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <canvas id="canvas"></canvas>
 
+    <!-- 콤보 카운터 (상단 중앙) -->
+    <div id="comboCounter" class="combo-counter">
+        <span id="comboCount">0</span>
+        <span class="combo-label">COMBO</span>
+    </div>
+
     <!-- 설정 UI (우측 하단) -->
     <div class="controls">
+        <div class="control-group">
+            <label>Emoji</label>
+            <div class="button-group">
+                <button class="emoji-btn active" data-emoji="🖕">🖕</button>
+                <button class="emoji-btn" data-emoji="💩">💩</button>
+                <button class="emoji-btn" data-emoji="🤬">🤬</button>
+                <button class="emoji-btn" data-emoji="👊">👊</button>
+                <button class="emoji-btn" data-emoji="💀">💀</button>
+                <button class="emoji-btn" data-emoji="🔥">🔥</button>
+            </div>
+        </div>
         <div class="control-group">
             <label>Fade-out</label>
             <div class="button-group">
@@ -40,18 +57,43 @@
     <!-- About 버튼 (좌측 하단) -->
     <button id="aboutBtn" class="about-btn">About</button>
 
+    <!-- 공유 버튼 (좌측 하단, About 위) -->
+    <button id="shareBtn" class="share-btn">공유</button>
+
     <!-- About 모달 -->
     <div id="aboutModal" class="modal">
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <h2>몰래 날려버려 🖕</h2>
             <h3>문의</h3>
-            <p class="email">code.madang.works@gmail.com</p>
+            <p class="email">tngh147258@naver.com</p>
             <hr>
             <h3>커피 사주실 분 ☕</h3>
             <div class="donation">
                 <p>카카오뱅크: 3333-26-7184989</p>
                 <button id="copyBtn" class="copy-btn">복사</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공유 모달 -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content share-modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>공유하기</h2>
+            <div class="share-buttons">
+                <button class="share-social-btn twitter" data-platform="twitter">
+                    𝕏
+                </button>
+                <button class="share-social-btn facebook" data-platform="facebook">
+                    f
+                </button>
+                <button class="share-social-btn kakao" data-platform="kakao">
+                    💬
+                </button>
+                <button class="share-social-btn copy-link" data-platform="copy">
+                    🔗
+                </button>
             </div>
         </div>
     </div>

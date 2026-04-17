@@ -1,5 +1,5 @@
 /**
- * 빠큐 - Interactive Pop Web App
+ * 몰래 날려버려 - Interactive Pop Web App
  * @author suho.do
  * @since 2024-01
  */
@@ -13,7 +13,16 @@ let activeEmojis = [];
 let particles = [];
 let fadeTime = 0.5;
 let effectType = 'firework';
+let selectedEmoji = '🖕';
 let animationId = null;
+
+// 멀티터치 지원
+let activePointers = new Map();
+
+// 콤보 카운터
+let comboCount = 0;
+let comboTimer = null;
+const COMBO_TIMEOUT = 2000;
 
 // 성능 제한
 const MAX_PARTICLES = 300;
@@ -25,6 +34,7 @@ function loadSettings() {
         const settings = JSON.parse(saved);
         fadeTime = settings.fadeTime || 0.5;
         effectType = settings.effectType || 'firework';
+        selectedEmoji = settings.selectedEmoji || '🖕';
         updateUI();
     }
 }
@@ -33,7 +43,8 @@ function loadSettings() {
 function saveSettings() {
     localStorage.setItem('backuSettings', JSON.stringify({
         fadeTime,
-        effectType
+        effectType,
+        selectedEmoji
     }));
 }
 
@@ -45,6 +56,9 @@ function updateUI() {
     document.querySelectorAll('.effect-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.effect === effectType);
     });
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emoji === selectedEmoji);
+    });
 }
 
 // Canvas 리사이즈
@@ -54,11 +68,68 @@ function resizeCanvas() {
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
+// 화면 흔들림 효과
+function shakeScreen(intensity = 'normal') {
+    document.body.classList.remove('shake', 'shake-intense');
+    void document.body.offsetWidth; // reflow
+    
+    if (intensity === 'intense') {
+        document.body.classList.add('shake-intense');
+        setTimeout(() => document.body.classList.remove('shake-intense'), 500);
+    } else {
+        document.body.classList.add('shake');
+        setTimeout(() => document.body.classList.remove('shake'), 300);
+    }
+}
+
+// 콤보 카운터 업데이트
+function updateCombo() {
+    comboCount++;
+
+    const counter = document.getElementById('comboCounter');
+    const countEl = document.getElementById('comboCount');
+
+    countEl.textContent = comboCount;
+    
+    // 콤보 숫자에 따른 색상 변화
+    if (comboCount >= 30) {
+        countEl.style.color = '#ff0000'; // 빨강 (폭발)
+        countEl.style.textShadow = '0 0 20px #ff0000, 0 0 40px #ff4757';
+    } else if (comboCount >= 20) {
+        countEl.style.color = '#ff9f43'; // 주황
+        countEl.style.textShadow = '0 0 20px #ff9f43, 0 0 40px #ff9f43';
+    } else if (comboCount >= 10) {
+        countEl.style.color = '#feca57'; // 노랑
+        countEl.style.textShadow = '0 0 20px #feca57, 0 0 40px #feca57';
+    } else {
+        countEl.style.color = 'white';
+        countEl.style.textShadow = '0 0 20px rgba(108, 92, 231, 0.8), 0 0 40px rgba(108, 92, 231, 0.5)';
+    }
+
+    counter.classList.add('show');
+    counter.classList.remove('pulse');
+    void counter.offsetWidth; // reflow
+    counter.classList.add('pulse');
+
+    // 고콤보 시 화면 흔들림 강화
+    if (comboCount % 10 === 0) {
+        shakeScreen('intense');
+    }
+
+    // 콤보 타이머 리셋
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(() => {
+        counter.classList.remove('show');
+        comboCount = 0;
+    }, COMBO_TIMEOUT);
+}
+
 // 이모지 클래스
 class Emoji {
-    constructor(x, y) {
+    constructor(x, y, emoji) {
         this.x = x;
         this.y = y;
+        this.emoji = emoji;
         this.scale = 1;
         this.maxScale = 5;
         this.growing = true;
@@ -98,7 +169,7 @@ class Emoji {
         ctx.font = `${40 * this.scale}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🖕', 0, 0);
+        ctx.fillText(this.emoji, 0, 0);
         ctx.restore();
     }
 }
@@ -114,7 +185,6 @@ class Particle {
         this.opacity = 1;
         this.createdAt = performance.now();
 
-        // 시간에 맞게 속도 스케일링 (기준: 0.5초)
         const timeScale = 0.5 / duration;
         this.velocity = {
             x: velocity.x * timeScale,
@@ -151,16 +221,16 @@ class Particle {
 
 // 이모지 파티클 클래스 (이모지 확산용)
 class EmojiParticle {
-    constructor(x, y, velocity, scale, duration) {
+    constructor(x, y, velocity, scale, duration, emoji) {
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.duration = duration;
+        this.emoji = emoji;
         this.opacity = 1;
         this.rotation = Math.random() * Math.PI * 2;
         this.createdAt = performance.now();
 
-        // 시간에 맞게 속도 스케일링 (기준: 0.5초)
         const timeScale = 0.5 / duration;
         this.velocity = {
             x: velocity.x * timeScale,
@@ -194,7 +264,7 @@ class EmojiParticle {
         ctx.font = `${30 * this.scale}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🖕', 0, 0);
+        ctx.fillText(this.emoji, 0, 0);
         ctx.restore();
     }
 }
@@ -202,7 +272,6 @@ class EmojiParticle {
 // 불꽃놀이 효과 생성
 function createFirework(x, y, scale) {
     const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'];
-    // 파티클 수 제한 (scale 커져도 최대 80개)
     const particleCount = Math.min(80, Math.floor(30 + scale * 10));
     const available = MAX_PARTICLES - particles.length;
     const actualCount = Math.min(particleCount, available);
@@ -222,8 +291,7 @@ function createFirework(x, y, scale) {
 }
 
 // 이모지 확산 효과 생성
-function createEmojiSpread(x, y, scale) {
-    // 파티클 수 제한 (scale 커져도 최대 30개)
+function createEmojiSpread(x, y, scale, emoji) {
     const particleCount = Math.min(30, Math.floor(10 + scale * 4));
     const available = MAX_PARTICLES - particles.length;
     const actualCount = Math.min(particleCount, available);
@@ -237,7 +305,7 @@ function createEmojiSpread(x, y, scale) {
         };
         const particleScale = (0.5 + Math.random() * 0.5) * scale;
 
-        particles.push(new EmojiParticle(x, y, velocity, particleScale, fadeTime));
+        particles.push(new EmojiParticle(x, y, velocity, particleScale, fadeTime, emoji));
     }
 }
 
@@ -248,54 +316,60 @@ function vibrate(pattern) {
     }
 }
 
-// 현재 활성 이모지 (누르고 있는 중)
-let currentEmoji = null;
 let lastTime = performance.now();
 
-// 포인터 이벤트 핸들러
+// 멀티터치 포인터 이벤트 핸들러
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    const x = e.clientX;
-    const y = e.clientY;
-
-    currentEmoji = new Emoji(x, y);
-    activeEmojis.push(currentEmoji);
-
+    const emoji = new Emoji(e.clientX, e.clientY, selectedEmoji);
+    activeEmojis.push(emoji);
+    activePointers.set(e.pointerId, emoji);
     vibrate(10);
 });
 
 canvas.addEventListener('pointermove', (e) => {
-    if (currentEmoji) {
-        currentEmoji.x = e.clientX;
-        currentEmoji.y = e.clientY;
+    const emoji = activePointers.get(e.pointerId);
+    if (emoji) {
+        emoji.x = e.clientX;
+        emoji.y = e.clientY;
     }
 });
 
 canvas.addEventListener('pointerup', (e) => {
-    if (currentEmoji) {
-        const scale = currentEmoji.scale;
-        const x = currentEmoji.x;
-        const y = currentEmoji.y;
+    const emoji = activePointers.get(e.pointerId);
+    if (emoji) {
+        const scale = emoji.scale;
+        const x = emoji.x;
+        const y = emoji.y;
 
         // 효과 생성
         if (effectType === 'firework') {
             createFirework(x, y, scale);
         } else {
-            createEmojiSpread(x, y, scale);
+            createEmojiSpread(x, y, scale, emoji.emoji);
         }
 
+        // 화면 흔들림 (scale이 2 이상일 때)
+        if (scale >= 2) {
+            shakeScreen();
+        }
+
+        // 콤보 업데이트
+        updateCombo();
+
         // 페이드 아웃 시작
-        currentEmoji.startFade();
-        currentEmoji = null;
+        emoji.startFade();
+        activePointers.delete(e.pointerId);
 
         vibrate([20, 50, 30]);
     }
 });
 
-canvas.addEventListener('pointercancel', () => {
-    if (currentEmoji) {
-        currentEmoji.startFade();
-        currentEmoji = null;
+canvas.addEventListener('pointercancel', (e) => {
+    const emoji = activePointers.get(e.pointerId);
+    if (emoji) {
+        emoji.startFade();
+        activePointers.delete(e.pointerId);
     }
 });
 
@@ -303,8 +377,13 @@ canvas.addEventListener('pointercancel', () => {
 function clearAll() {
     activeEmojis = [];
     particles = [];
-    currentEmoji = null;
+    activePointers.clear();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 콤보 리셋
+    comboCount = 0;
+    document.getElementById('comboCounter').classList.remove('show');
+    if (comboTimer) clearTimeout(comboTimer);
 }
 
 // 키보드 단축키
@@ -323,14 +402,20 @@ document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('escapeBtn').addEventListener('click', escape);
 
 function escape() {
-    // 404 화면 표시
     document.getElementById('error404').classList.add('show');
-
-    // 짧은 딜레이 후 구글로 이동
     setTimeout(() => {
         window.location.replace('https://www.google.com');
     }, 100);
 }
+
+// 이모지 선택
+document.querySelectorAll('.emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        selectedEmoji = btn.dataset.emoji;
+        updateUI();
+        saveSettings();
+    });
+});
 
 // Fade-out 시간 설정
 document.querySelectorAll('.fade-btn').forEach(btn => {
@@ -353,20 +438,65 @@ document.querySelectorAll('.effect-btn').forEach(btn => {
 // About 모달
 const aboutModal = document.getElementById('aboutModal');
 const aboutBtn = document.getElementById('aboutBtn');
-const modalClose = document.querySelector('.modal-close');
 
 aboutBtn.addEventListener('click', () => {
     aboutModal.classList.add('show');
 });
 
-modalClose.addEventListener('click', () => {
-    aboutModal.classList.remove('show');
+// 공유 모달
+const shareModal = document.getElementById('shareModal');
+const shareBtn = document.getElementById('shareBtn');
+
+shareBtn.addEventListener('click', () => {
+    shareModal.classList.add('show');
 });
 
-aboutModal.addEventListener('click', (e) => {
-    if (e.target === aboutModal) {
-        aboutModal.classList.remove('show');
-    }
+// 모달 닫기
+document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.closest('.modal').classList.remove('show');
+    });
+});
+
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+});
+
+// 공유 기능
+const SHARE_URL = 'https://ssosh.github.io/backu/';
+const SHARE_TEXT = '스트레스 받을 때 몰래 날려버려 🖕';
+
+document.querySelectorAll('.share-social-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const platform = btn.dataset.platform;
+        let shareUrl = '';
+
+        switch (platform) {
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`;
+                window.open(shareUrl, '_blank');
+                break;
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`;
+                window.open(shareUrl, '_blank');
+                break;
+            case 'kakao':
+                // 카카오톡 공유 (카카오 SDK 없이 모바일 앱 스킴 사용)
+                const kakaoUrl = `https://story.kakao.com/share?url=${encodeURIComponent(SHARE_URL)}`;
+                window.open(kakaoUrl, '_blank');
+                break;
+            case 'copy':
+                navigator.clipboard.writeText(SHARE_URL).then(() => {
+                    showToast('링크가 복사되었습니다!');
+                    shareModal.classList.remove('show');
+                });
+                break;
+        }
+    });
 });
 
 // 계좌 복사
@@ -395,13 +525,12 @@ function animate(currentTime) {
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    // 캔버스 클리어
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-    // 현재 누르고 있는 이모지 성장
-    if (currentEmoji) {
-        currentEmoji.grow(deltaTime);
-    }
+    // 모든 활성 포인터의 이모지 성장
+    activePointers.forEach(emoji => {
+        emoji.grow(deltaTime);
+    });
 
     // 이모지 업데이트 및 그리기
     activeEmojis = activeEmojis.filter(emoji => {

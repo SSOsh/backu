@@ -13,10 +13,74 @@ body {
     -webkit-user-select: none;
 }
 
+body.shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+body.shake-intense {
+    animation: shakeIntense 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-5px, -2px); }
+    20%, 40%, 60%, 80% { transform: translate(5px, 2px); }
+}
+
+@keyframes shakeIntense {
+    0%, 100% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-10px, -5px) rotate(-1deg); }
+    20%, 40%, 60%, 80% { transform: translate(10px, 5px) rotate(1deg); }
+}
+
 #canvas {
     display: block;
     width: 100vw;
     height: 100vh;
+}
+
+/* 콤보 카운터 */
+.combo-counter {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.combo-counter.show {
+    opacity: 1;
+}
+
+.combo-counter #comboCount {
+    font-size: 64px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 20px rgba(108, 92, 231, 0.8), 0 0 40px rgba(108, 92, 231, 0.5);
+    line-height: 1;
+}
+
+.combo-counter .combo-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 4px;
+}
+
+.combo-counter.pulse #comboCount {
+    animation: comboPulse 0.2s ease-out;
+}
+
+@keyframes comboPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
 /* 설정 UI */
@@ -50,10 +114,12 @@ body {
 .button-group {
     display: flex;
     gap: 6px;
+    flex-wrap: wrap;
 }
 
 .fade-btn,
-.effect-btn {
+.effect-btn,
+.emoji-btn {
     padding: 8px 12px;
     border: none;
     border-radius: 8px;
@@ -65,17 +131,20 @@ body {
 }
 
 .fade-btn:hover,
-.effect-btn:hover {
+.effect-btn:hover,
+.emoji-btn:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
 .fade-btn.active,
-.effect-btn.active {
+.effect-btn.active,
+.emoji-btn.active {
     background: #6c5ce7;
     box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
 }
 
-.effect-btn {
+.effect-btn,
+.emoji-btn {
     font-size: 20px;
     padding: 6px 12px;
 }
@@ -166,6 +235,27 @@ body {
 }
 
 .about-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 공유 버튼 */
+.share-btn {
+    position: fixed;
+    bottom: 70px;
+    left: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.share-btn:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
@@ -281,6 +371,57 @@ body {
     transform: scale(0.95);
 }
 
+/* 공유 모달 */
+.share-modal-content {
+    text-align: center;
+}
+
+.share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.share-social-btn {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-social-btn:hover {
+    transform: scale(1.1);
+}
+
+.share-social-btn.twitter {
+    background: #000;
+    color: white;
+    font-weight: bold;
+}
+
+.share-social-btn.facebook {
+    background: #1877f2;
+    color: white;
+    font-weight: bold;
+}
+
+.share-social-btn.kakao {
+    background: #fee500;
+    color: #000;
+}
+
+.share-social-btn.copy-link {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
 /* 토스트 메시지 */
 .toast {
     position: fixed;
@@ -316,17 +457,28 @@ body {
         left: 10px;
     }
 
+    .share-btn {
+        bottom: 60px;
+        left: 10px;
+    }
+
     .fade-btn,
-    .effect-btn {
+    .effect-btn,
+    .emoji-btn {
         padding: 6px 10px;
         font-size: 12px;
     }
 
-    .effect-btn {
+    .effect-btn,
+    .emoji-btn {
         font-size: 18px;
     }
 
     .modal-content {
         padding: 24px;
+    }
+
+    .combo-counter #comboCount {
+        font-size: 48px;
     }
 }
