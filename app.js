@@ -415,7 +415,7 @@ function clearAll() {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         clearAll();
-    } else if (e.key === 'q' || e.key === 'Q') {
+    } else if (e.key === 'q' || e.key === 'Q' || e.key === 'ㅂ') {
         escape();
     }
 });
