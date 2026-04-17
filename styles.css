@@ -100,9 +100,13 @@ body.shake-intense {
     overflow: hidden;
 }
 
-.controls.minimized {
-    width: 100px;
-    height: 48px;
+/* 최소화 상태 */
+.controls.minimized .controls-content {
+    display: none;
+}
+
+.controls.minimized .action-buttons {
+    padding-top: 16px;
 }
 
 .controls-header {
@@ -144,12 +148,6 @@ body.shake-intense {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    transition: opacity 0.2s;
-}
-
-.controls.minimized .controls-content {
-    opacity: 0;
-    pointer-events: none;
 }
 
 .control-group {
@@ -272,10 +270,6 @@ input:checked + .slider:before {
 
 .action-buttons .action-btn {
     flex: 1;
-}
-
-.controls.minimized .action-buttons {
-    display: none;
 }
 
 .fade-btn,
@@ -532,57 +526,6 @@ input:checked + .slider:before {
     transform: scale(0.95);
 }
 
-/* 공유 모달 */
-.share-modal-content {
-    text-align: center;
-}
-
-.share-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 24px;
-}
-
-.share-social-btn {
-    width: 60px;
-    height: 60px;
-    border: none;
-    border-radius: 50%;
-    font-size: 24px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.share-social-btn:hover {
-    transform: scale(1.1);
-}
-
-.share-social-btn.twitter {
-    background: #000;
-    color: white;
-    font-weight: bold;
-}
-
-.share-social-btn.facebook {
-    background: #1877f2;
-    color: white;
-    font-weight: bold;
-}
-
-.share-social-btn.kakao {
-    background: #fee500;
-    color: #000;
-}
-
-.share-social-btn.copy-link {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
 /* 토스트 메시지 */
 .toast {
     position: fixed;
@@ -610,7 +553,8 @@ input:checked + .slider:before {
     .controls {
         bottom: 10px;
         right: 10px;
-        padding: 12px;
+        width: calc(100% - 20px);
+        max-width: 280px;
     }
 
     .about-btn {

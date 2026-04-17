@@ -502,6 +502,15 @@ function bindEvents() {
         });
     });
 
+    // About 모달 열기
+    const aboutBtn = document.getElementById('aboutBtn');
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutBtn && aboutModal) {
+        aboutBtn.addEventListener('click', () => {
+            aboutModal.classList.add('show');
+        });
+    }
+
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('.modal').classList.remove('show'));
     });
