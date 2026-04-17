@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>빠큐 - Interactive Pop</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <!-- 설정 UI (우측 하단) -->
+    <div class="controls">
+        <div class="control-group">
+            <label>Fade-out</label>
+            <div class="button-group">
+                <button class="fade-btn" data-time="0.3">0.3s</button>
+                <button class="fade-btn active" data-time="0.5">0.5s</button>
+                <button class="fade-btn" data-time="1.0">1.0s</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Effect</label>
+            <div class="button-group">
+                <button class="effect-btn active" data-effect="firework">🎆</button>
+                <button class="effect-btn" data-effect="emoji">🖕</button>
+            </div>
+        </div>
+        <button id="clearBtn" class="action-btn">Clear</button>
+        <button id="escapeBtn" class="action-btn escape-btn">탈출 (Q)</button>
+    </div>
+
+    <!-- 404 화면 -->
+    <div id="error404" class="error-screen">
+        <h1>404</h1>
+        <p>Page Not Found</p>
+        <p class="error-detail">The requested URL was not found on this server.</p>
+    </div>
+
+    <!-- About 버튼 (좌측 하단) -->
+    <button id="aboutBtn" class="about-btn">About</button>
+
+    <!-- About 모달 -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>빠큐 🖕</h2>
+            <p>클릭하면 빠큐가 나타나고, 길게 누르면 커지며, 손을 떼면 폭발합니다.</p>
+            <hr>
+            <h3>제작자</h3>
+            <p class="email" data-email="suho[at]do[dot]dev">suho[at]do[dot]dev</p>
+            <hr>
+            <h3>후원</h3>
+            <div class="donation">
+                <p>카카오뱅크: 3333-01-1234567</p>
+                <button id="copyBtn" class="copy-btn">복사</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
