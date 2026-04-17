@@ -71,6 +71,12 @@ function updateUI() {
     document.querySelectorAll('.emoji-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.emoji === selectedEmoji);
     });
+
+    // Effect 설정의 이모지 버튼 아이콘 업데이트
+    const emojiEffectBtn = document.getElementById('emojiEffectBtn');
+    if (emojiEffectBtn) {
+        emojiEffectBtn.textContent = selectedEmoji;
+    }
 }
 
 // Canvas 리사이즈
