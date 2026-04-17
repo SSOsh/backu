@@ -16,6 +16,10 @@ let effectType = 'firework';
 let selectedEmoji = '🖕';
 let animationId = null;
 
+// 설정 토글 상태
+let isComboEnabled = true;
+let isShakeEnabled = true;
+
 // 멀티터치 지원
 let activePointers = new Map();
 
@@ -35,6 +39,12 @@ function loadSettings() {
         fadeTime = settings.fadeTime || 0.5;
         effectType = settings.effectType || 'firework';
         selectedEmoji = settings.selectedEmoji || '🖕';
+        isComboEnabled = settings.isComboEnabled !== undefined ? settings.isComboEnabled : true;
+        isShakeEnabled = settings.isShakeEnabled !== undefined ? settings.isShakeEnabled : true;
+        
+        // UI 반영
+        document.getElementById('comboToggle').checked = isComboEnabled;
+        document.getElementById('shakeToggle').checked = isShakeEnabled;
         updateUI();
     }
 }
@@ -44,7 +54,9 @@ function saveSettings() {
     localStorage.setItem('backuSettings', JSON.stringify({
         fadeTime,
         effectType,
-        selectedEmoji
+        selectedEmoji,
+        isComboEnabled,
+        isShakeEnabled
     }));
 }
 
@@ -70,6 +82,8 @@ function resizeCanvas() {
 
 // 화면 흔들림 효과
 function shakeScreen(intensity = 'normal') {
+    if (!isShakeEnabled) return;
+
     document.body.classList.remove('shake', 'shake-intense');
     void document.body.offsetWidth; // reflow
     
@@ -84,6 +98,11 @@ function shakeScreen(intensity = 'normal') {
 
 // 콤보 카운터 업데이트
 function updateCombo() {
+    if (!isComboEnabled) {
+        document.getElementById('comboCounter').classList.remove('show');
+        return;
+    }
+
     comboCount++;
 
     const counter = document.getElementById('comboCounter');
@@ -395,11 +414,105 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Clear 버튼
-document.getElementById('clearBtn').addEventListener('click', clearAll);
+// UI 이벤트 바인딩
+function bindEvents() {
+    // Clear 버튼
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
 
-// 탈출 버튼 (보스 키)
-document.getElementById('escapeBtn').addEventListener('click', escape);
+    // 탈출 버튼
+    document.getElementById('escapeBtn').addEventListener('click', escape);
+
+    // 이모지 선택
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedEmoji = btn.dataset.emoji;
+            updateUI();
+            saveSettings();
+        });
+    });
+
+    // Fade-out 시간 설정
+    document.querySelectorAll('.fade-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            fadeTime = parseFloat(btn.dataset.time);
+            updateUI();
+            saveSettings();
+        });
+    });
+
+    // 효과 타입 설정
+    document.querySelectorAll('.effect-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            effectType = btn.dataset.effect;
+            updateUI();
+            saveSettings();
+        });
+    });
+
+    // 토글 설정
+    document.getElementById('comboToggle').addEventListener('change', (e) => {
+        isComboEnabled = e.target.checked;
+        if (!isComboEnabled) {
+            document.getElementById('comboCounter').classList.remove('show');
+            comboCount = 0;
+        }
+        saveSettings();
+    });
+
+    document.getElementById('shakeToggle').addEventListener('change', (e) => {
+        isShakeEnabled = e.target.checked;
+        saveSettings();
+    });
+
+    // 설정창 최소화/최대화
+    const controls = document.getElementById('controls');
+    const minimizeBtn = document.getElementById('minimizeBtn');
+    
+    minimizeBtn.addEventListener('click', () => {
+        controls.classList.toggle('minimized');
+        minimizeBtn.textContent = controls.classList.contains('minimized') ? '+' : '−';
+    });
+
+    // 개별 섹션 접기/펴기
+    document.querySelectorAll('.group-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const targetId = header.dataset.target;
+            if (!targetId) return;
+            
+            const target = document.getElementById(targetId);
+            header.classList.toggle('collapsed');
+            target.classList.toggle('collapsed');
+        });
+    });
+
+    // 공유 버튼: 클릭 시 즉시 링크 복사
+    const shareBtn = document.getElementById('shareBtn');
+    shareBtn.addEventListener('click', () => {
+        const SHARE_URL = 'https://ssosh.github.io/backu/';
+        navigator.clipboard.writeText(SHARE_URL).then(() => {
+            showToast('공유 링크가 복사되었습니다! 🔗');
+        }).catch(() => {
+            showToast('링크 복사에 실패했습니다.');
+        });
+    });
+
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', () => btn.closest('.modal').classList.remove('show'));
+    });
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('show');
+        });
+    });
+
+    // 계좌 복사
+    document.getElementById('copyBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText('3333-26-7184989').then(() => {
+            showToast('계좌번호가 복사되었습니다!');
+        });
+    });
+}
 
 function escape() {
     document.getElementById('error404').classList.add('show');
@@ -408,116 +521,11 @@ function escape() {
     }, 100);
 }
 
-// 이모지 선택
-document.querySelectorAll('.emoji-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        selectedEmoji = btn.dataset.emoji;
-        updateUI();
-        saveSettings();
-    });
-});
-
-// Fade-out 시간 설정
-document.querySelectorAll('.fade-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        fadeTime = parseFloat(btn.dataset.time);
-        updateUI();
-        saveSettings();
-    });
-});
-
-// 효과 타입 설정
-document.querySelectorAll('.effect-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        effectType = btn.dataset.effect;
-        updateUI();
-        saveSettings();
-    });
-});
-
-// About 모달
-const aboutModal = document.getElementById('aboutModal');
-const aboutBtn = document.getElementById('aboutBtn');
-
-aboutBtn.addEventListener('click', () => {
-    aboutModal.classList.add('show');
-});
-
-// 공유 모달
-const shareModal = document.getElementById('shareModal');
-const shareBtn = document.getElementById('shareBtn');
-
-shareBtn.addEventListener('click', () => {
-    shareModal.classList.add('show');
-});
-
-// 모달 닫기
-document.querySelectorAll('.modal-close').forEach(btn => {
-    btn.addEventListener('click', () => {
-        btn.closest('.modal').classList.remove('show');
-    });
-});
-
-document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('show');
-        }
-    });
-});
-
-// 공유 기능
-const SHARE_URL = 'https://ssosh.github.io/backu/';
-const SHARE_TEXT = '스트레스 받을 때 몰래 날려버려 🖕';
-
-document.querySelectorAll('.share-social-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const platform = btn.dataset.platform;
-        let shareUrl = '';
-
-        switch (platform) {
-            case 'twitter':
-                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`;
-                window.open(shareUrl, '_blank');
-                break;
-            case 'facebook':
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`;
-                window.open(shareUrl, '_blank');
-                break;
-            case 'kakao':
-                // 카카오톡 공유 (카카오 SDK 없이 모바일 앱 스킴 사용)
-                const kakaoUrl = `https://story.kakao.com/share?url=${encodeURIComponent(SHARE_URL)}`;
-                window.open(kakaoUrl, '_blank');
-                break;
-            case 'copy':
-                navigator.clipboard.writeText(SHARE_URL).then(() => {
-                    showToast('링크가 복사되었습니다!');
-                    shareModal.classList.remove('show');
-                });
-                break;
-        }
-    });
-});
-
-// 계좌 복사
-document.getElementById('copyBtn').addEventListener('click', () => {
-    const account = '3333-26-7184989';
-    navigator.clipboard.writeText(account).then(() => {
-        showToast('계좌번호가 복사되었습니다!');
-    }).catch(() => {
-        showToast('복사에 실패했습니다.');
-    });
-});
-
-// 토스트 메시지
 function showToast(message) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.classList.add('show');
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2000);
+    setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
 // 애니메이션 루프
@@ -527,26 +535,15 @@ function animate(currentTime) {
 
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-    // 모든 활성 포인터의 이모지 성장
-    activePointers.forEach(emoji => {
-        emoji.grow(deltaTime);
-    });
-
-    // 이모지 업데이트 및 그리기
+    activePointers.forEach(emoji => emoji.grow(deltaTime));
     activeEmojis = activeEmojis.filter(emoji => {
         const alive = emoji.update(currentTime);
-        if (alive) {
-            emoji.draw();
-        }
+        if (alive) emoji.draw();
         return alive;
     });
-
-    // 파티클 업데이트 및 그리기
     particles = particles.filter(particle => {
         const alive = particle.update(deltaTime);
-        if (alive) {
-            particle.draw();
-        }
+        if (alive) particle.draw();
         return alive;
     });
 
@@ -557,12 +554,10 @@ function animate(currentTime) {
 function init() {
     resizeCanvas();
     loadSettings();
+    bindEvents();
     lastTime = performance.now();
     animate(lastTime);
 }
 
-// 윈도우 리사이즈 이벤트
 window.addEventListener('resize', resizeCanvas);
-
-// 앱 시작
 init();

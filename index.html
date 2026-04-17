@@ -16,35 +16,78 @@
     </div>
 
     <!-- 설정 UI (우측 하단) -->
-    <div class="controls">
-        <div class="control-group">
-            <label>Emoji</label>
-            <div class="button-group">
-                <button class="emoji-btn active" data-emoji="🖕">🖕</button>
-                <button class="emoji-btn" data-emoji="💩">💩</button>
-                <button class="emoji-btn" data-emoji="🤬">🤬</button>
-                <button class="emoji-btn" data-emoji="👊">👊</button>
-                <button class="emoji-btn" data-emoji="💀">💀</button>
-                <button class="emoji-btn" data-emoji="🔥">🔥</button>
+    <div class="controls" id="controls">
+        <div class="controls-header">
+            <span>Settings</span>
+            <button id="minimizeBtn" class="minimize-btn">−</button>
+        </div>
+        
+        <div class="controls-content" id="controlsContent">
+            <div class="control-group">
+                <div class="group-header" data-target="emojiGroup">
+                    <label>Emoji</label>
+                    <span class="chevron">▼</span>
+                </div>
+                <div id="emojiGroup" class="button-group collapsible-content">
+                    <button class="emoji-btn active" data-emoji="🖕">🖕</button>
+                    <button class="emoji-btn" data-emoji="💩">💩</button>
+                    <button class="emoji-btn" data-emoji="🤬">🤬</button>
+                    <button class="emoji-btn" data-emoji="👊">👊</button>
+                    <button class="emoji-btn" data-emoji="💀">💀</button>
+                    <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="group-header" data-target="fadeGroup">
+                    <label>Fade-out</label>
+                    <span class="chevron">▼</span>
+                </div>
+                <div id="fadeGroup" class="button-group collapsible-content">
+                    <button class="fade-btn" data-time="0.3">0.3s</button>
+                    <button class="fade-btn active" data-time="0.5">0.5s</button>
+                    <button class="fade-btn" data-time="1.0">1.0s</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="group-header" data-target="effectGroup">
+                    <label>Effect</label>
+                    <span class="chevron">▼</span>
+                </div>
+                <div id="effectGroup" class="button-group collapsible-content">
+                    <button class="effect-btn active" data-effect="firework">🎆</button>
+                    <button class="effect-btn" data-effect="emoji">🖕</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="group-header">
+                    <label>Options</label>
+                </div>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <span>Combo</span>
+                        <label class="switch">
+                            <input type="checkbox" id="comboToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>화면 흔들기</span>
+                        <label class="switch">
+                            <input type="checkbox" id="shakeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="control-group">
-            <label>Fade-out</label>
-            <div class="button-group">
-                <button class="fade-btn" data-time="0.3">0.3s</button>
-                <button class="fade-btn active" data-time="0.5">0.5s</button>
-                <button class="fade-btn" data-time="1.0">1.0s</button>
-            </div>
+
+        <div class="action-buttons">
+            <button id="clearBtn" class="action-btn">Clear</button>
+            <button id="escapeBtn" class="action-btn escape-btn">탈출 (Q)</button>
         </div>
-        <div class="control-group">
-            <label>Effect</label>
-            <div class="button-group">
-                <button class="effect-btn active" data-effect="firework">🎆</button>
-                <button class="effect-btn" data-effect="emoji">🖕</button>
-            </div>
-        </div>
-        <button id="clearBtn" class="action-btn">Clear</button>
-        <button id="escapeBtn" class="action-btn escape-btn">탈출 (Q)</button>
     </div>
 
     <!-- 404 화면 -->
@@ -72,28 +115,6 @@
             <div class="donation">
                 <p>카카오뱅크: 3333-26-7184989</p>
                 <button id="copyBtn" class="copy-btn">복사</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 공유 모달 -->
-    <div id="shareModal" class="modal">
-        <div class="modal-content share-modal-content">
-            <button class="modal-close">&times;</button>
-            <h2>공유하기</h2>
-            <div class="share-buttons">
-                <button class="share-social-btn twitter" data-platform="twitter">
-                    𝕏
-                </button>
-                <button class="share-social-btn facebook" data-platform="facebook">
-                    f
-                </button>
-                <button class="share-social-btn kakao" data-platform="kakao">
-                    💬
-                </button>
-                <button class="share-social-btn copy-link" data-platform="copy">
-                    🔗
-                </button>
             </div>
         </div>
     </div>
